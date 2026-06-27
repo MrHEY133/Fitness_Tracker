@@ -93,6 +93,23 @@ const MARKERS = [
   { key:"kreuzheben", name:"LH-Kreuzheben", unit:"kg" },
 ];
 
+const WORKOUT_DESC = {
+  // Phase 1
+  "1-A": "Brust, Schultern, Beinvorderseite",
+  "1-B": "Rücken, Klimmzüge, Beinrückseite",
+  // Phase 2
+  "2-Upper A": "Oberkörper – Brust & Schultern im Fokus",
+  "2-Upper B": "Oberkörper – Rücken & Klimmzüge im Fokus",
+  "2-Lower A": "Beine – Kniebeugen & Ausfallschritte",
+  "2-Lower B": "Beine – Kreuzheben & Gesäß",
+  // Phase 3
+  "3-A": "Flaches Drücken + schweres Ziehen",
+  "3-B": "Schräges Drücken + schweres Heben",
+  "3-C": "Enges Drücken + einarmige Arbeit",
+  // Pause
+  "Pause": "Ruhetag",
+};
+
 let data = {};
 let currentTab = "log";
 let selectedDate = todayStr();
@@ -327,7 +344,13 @@ function render() {
       html += `<button class="chip${entry.workout===w?' on':''}" onclick="toggleWorkout('${w}')">${w}</button>`;
     });
     html += `<button class="chip${entry.workout==='Pause'?' on':''}" onclick="toggleWorkout('Pause')">Pause</button>`;
-    html += `</div></div>`;
+    html += `</div>`;
+    if (entry.workout) {
+      const descKey = entry.workout === "Pause" ? "Pause" : `${phase.id}-${entry.workout}`;
+      const desc = WORKOUT_DESC[descKey];
+      if (desc) html += `<div style="margin-top:10px;font-size:12px;color:var(--green);font-style:italic">→ ${desc}</div>`;
+    }
+    html += `</div>`;
 
     // Cardio
     html += `<div class="card"><div class="card-title">Cardio</div><div class="chips">`;
