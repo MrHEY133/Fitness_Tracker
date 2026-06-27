@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0F1419">
+<title>Rekomposition</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0F1419;--card:#1A2332;--border:#2D3748;--green:#22C55E;--green15:rgba(34,197,94,.15);--green30:rgba(34,197,94,.3);--red:#EF4444;--amber:#F59E0B;--text:#E5E7EB;--text2:#9CA3AF;--text3:#4B5563;--white:#F9FAFB}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;max-width:480px;margin:0 auto;min-height:100vh;padding:16px 16px 100px;overflow-x:hidden}
+h1{font-size:22px;font-weight:700;color:var(--white);letter-spacing:-.02em;text-align:center}
+.phase{font-size:13px;color:var(--green);text-align:center;margin-top:4px;font-weight:600}
+.tabs{display:flex;gap:4px;background:var(--card);border-radius:12px;padding:4px;margin:20px 0}
+.tab{flex:1;padding:10px 0;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:var(--text2);transition:all .2s;font-family:inherit}
+.tab.active{background:var(--green);color:var(--bg)}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px}
+.card-title{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;font-weight:600}
+.date-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.date-btn{background:var(--card);border:none;color:var(--text2);font-size:22px;width:44px;height:44px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.date-text{font-size:15px;font-weight:600;color:var(--white);text-align:center}
+.date-sub{font-size:12px;color:var(--text2);text-align:center;margin-top:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 16px;border-radius:10px;border:2px solid var(--border);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+.chip.on{border-color:var(--green);background:var(--green15);color:var(--green)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+.toggle-label{font-size:14px;color:var(--text)}
+.toggle{width:52px;height:30px;border-radius:15px;border:none;cursor:pointer;position:relative;transition:background .2s;padding:0}
+.toggle.off{background:var(--border)}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';position:absolute;width:24px;height:24px;border-radius:12px;background:var(--white);top:3px;transition:left .2s}
+.toggle.off::after{left:3px}
+.toggle.on::after{left:25px}
+.exercise-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.exercise-name{flex:1;font-size:13px;color:var(--text2)}
+.exercise-input{width:70px;background:var(--bg);border:2px solid var(--border);border-radius:8px;padding:8px;color:var(--white);font-size:14px;text-align:center;font-family:inherit;outline:none}
+.exercise-input:focus{border-color:var(--green)}
+.exercise-unit{font-size:12px;color:var(--text3);width:30px}
+.waist-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.waist-input{flex:1;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--white);font-size:15px;font-family:inherit;outline:none}
+.waist-input:focus{border-color:var(--green)}
+.btn{background:var(--green);border:none;border-radius:10px;padding:10px 20px;color:var(--bg);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.stat-row{display:flex;gap:8px}
+.stat{flex:1;text-align:center}
+.stat-val{font-size:26px;font-weight:700;color:var(--white)}
+.stat-val.good{color:var(--green)}
+.stat-val.warn{color:var(--amber)}
+.stat-label{font-size:10px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
+.cal-header{display:flex;gap:4px;margin-bottom:8px}
+.cal-header span{flex:1;text-align:center;font-size:10px;color:var(--text3);font-weight:600}
+.cal-row{display:flex;gap:4px;margin-bottom:4px}
+.cal-day{flex:1;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;border:1px solid var(--border);background:var(--bg);color:var(--text3)}
+.cal-day.active{background:var(--green30);color:var(--green);border-color:var(--green30)}
+.cal-day.today{border:2px solid var(--green)}
+.cal-day.empty{border-color:transparent;background:transparent}
+.legend{display:flex;gap:12px;justify-content:center;margin-top:8px}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2)}
+.legend-dot{width:10px;height:10px;border-radius:3px}
+svg.chart{width:100%;overflow:visible}
+.chart-label{font-size:10px;fill:var(--text3)}
+.chart-line{fill:none;stroke:var(--green);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.chart-dot{fill:var(--green)}
+.chart-grid{stroke:var(--border);stroke-width:1}
+.export-area{width:100%;min-height:100px;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:12px;color:var(--text2);font-size:12px;font-family:monospace;resize:none;outline:none}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:var(--bg);padding:8px 24px;border-radius:20px;font-size:13px;font-weight:600;z-index:100;box-shadow:0 4px 20px rgba(34,197,94,.3);opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.compliance-bar{height:6px;border-radius:3px;background:var(--border);margin-top:6px;overflow:hidden}
+.compliance-fill{height:100%;border-radius:3px;background:var(--green);transition:width .3s}
+.week-summary{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.week-summary:last-child{border-bottom:none}
+.week-label{font-size:13px;color:var(--text2)}
+.week-val{font-size:13px;font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA ───
+const PHASES = [
+  { id:1, name:"Wiedereinstieg", start:"2026-06-29", end:"2026-07-19", workouts:["A","B"] },
+  { id:2, name:"Aufbau", start:"2026-07-20", end:"2026-08-12", workouts:["Upper A","Lower A","Upper B","Lower B"] },
+  { id:3, name:"Dauerbetrieb", start:"2026-08-13", end:"2027-07-09", workouts:["A","B","C"] },
+];
+const STORAGE_KEY = "rekom-tracker-v1";
+const MARKERS = [
+  { key:"bankdruecken", name:"KH-Bankdrücken", unit:"kg/Hand" },
+  { key:"klimmzuege", name:"Klimmzüge", unit:"Reps" },
+  { key:"kreuzheben", name:"LH-Kreuzheben", unit:"kg" },
+];
+
+let data = {};
+let currentTab = "log";
+let selectedDate = todayStr();
+
+function todayStr() {
+  return new Date().toISOString().slice(0,10);
+}
+function fmtDate(d) {
+  const p = d.split("-");
+  return `${p[2]}.${p[1]}.${p[0]}`;
+}
+function fmtShort(d) {
+  const p = d.split("-");
+  return `${p[2]}.${p[1]}`;
+}
+function weekday(d) {
+  return ["So","Mo","Di","Mi","Do","Fr","Sa"][new Date(d).getDay()];
+}
+function getPhase(d) {
+  for (const p of PHASES) if (d >= p.start && d <= p.end) return p;
+  return PHASES[2];
+}
+function shiftDate(days) {
+  const d = new Date(selectedDate);
+  d.setDate(d.getDate() + days);
+  selectedDate = d.toISOString().slice(0,10);
+  render();
+}
+function isSunday(d) { return new Date(d).getDay() === 0; }
+
+// ─── STORAGE ───
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) data = JSON.parse(raw);
+  } catch(e) { data = {}; }
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function getEntry(d) { return data[d] || {}; }
+function setField(d, field, val) {
+  if (!data[d]) data[d] = {};
+  if (val === null || val === undefined || val === "") {
+    delete data[d][field];
+    if (Object.keys(data[d]).length === 0) delete data[d];
+  } else {
+    data[d][field] = val;
+  }
+  save();
+  render();
+  toast("Gespeichert");
+}
+
+// ─── TOAST ───
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+}
+
+// ─── STATS HELPERS ───
+function getStreak() {
+  let streak = 0;
+  let d = todayStr();
+  const step = () => {
+    const dt = new Date(d);
+    dt.setDate(dt.getDate() - 1);
+    d = dt.toISOString().slice(0,10);
+  };
+  // Don't count today against streak
+  const e0 = getEntry(todayStr());
+  if (e0.workout || e0.cardio) streak++;
+  step();
+  while (true) {
+    const e = getEntry(d);
+    if (e.workout || e.cardio) { streak++; step(); }
+    else break;
+  }
+  return streak;
+}
+
+function getWeeklyCompliance(weeksBack) {
+  const results = [];
+  const t = new Date(todayStr());
+  const dow = t.getDay() || 7;
+  const thisMon = new Date(t);
+  thisMon.setDate(t.getDate() - dow + 1);
+
+  for (let w = 0; w < weeksBack; w++) {
+    const mon = new Date(thisMon);
+    mon.setDate(thisMon.getDate() - w * 7);
+    let workouts = 0, cardio = 0, protein = 0, days = 0;
+    for (let d = 0; d < 7; d++) {
+      const dt = new Date(mon);
+      dt.setDate(mon.getDate() + d);
+      const ds = dt.toISOString().slice(0,10);
+      if (ds > todayStr()) continue;
+      days++;
+      const e = getEntry(ds);
+      if (e.workout) workouts++;
+      if (e.cardio) cardio++;
+      if (e.protein) protein++;
+    }
+    const label = fmtShort(mon.toISOString().slice(0,10));
+    results.push({ label, workouts, cardio, protein, days });
+  }
+  return results.reverse();
+}
+
+function getMarkerData(key) {
+  return Object.entries(data)
+    .filter(([d,e]) => e[key] !== undefined && e[key] !== null)
+    .sort(([a],[b]) => a.localeCompare(b))
+    .map(([d,e]) => ({ date: d, val: parseFloat(e[key]) }));
+}
+
+function getWaistData() {
+  return Object.entries(data)
+    .filter(([d,e]) => e.bauchumfang)
+    .sort(([a],[b]) => a.localeCompare(b))
+    .map(([d,e]) => ({ date: d, val: parseFloat(e.bauchumfang) }));
+}
+
+// ─── SVG CHART ───
+function buildChart(points, unit, height=150) {
+  if (points.length < 2) return `<p style="color:var(--text3);font-size:13px;text-align:center;padding:30px 0">Mindestens 2 Einträge nötig</p>`;
+  const w = 320, h = height, pad = { t:10, r:10, b:25, l:35 };
+  const iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  const vals = points.map(p => p.val);
+  let min = Math.min(...vals), max = Math.max(...vals);
+  if (min === max) { min -= 1; max += 1; }
+  const range = max - min;
+  const xScale = (i) => pad.l + (i / (points.length - 1)) * iw;
+  const yScale = (v) => pad.t + ih - ((v - min) / range) * ih;
+  const pts = points.map((p,i) => `${xScale(i).toFixed(1)},${yScale(p.val).toFixed(1)}`);
+  const gridLines = 4;
+  let svg = `<svg class="chart" viewBox="0 0 ${w} ${h}">`;
+  for (let i = 0; i <= gridLines; i++) {
+    const y = pad.t + (i / gridLines) * ih;
+    const v = max - (i / gridLines) * range;
+    svg += `<line x1="${pad.l}" y1="${y}" x2="${w-pad.r}" y2="${y}" class="chart-grid"/>`;
+    svg += `<text x="${pad.l-5}" y="${y+3}" class="chart-label" text-anchor="end">${Math.round(v)}</text>`;
+  }
+  const labelStep = Math.max(1, Math.floor(points.length / 5));
+  points.forEach((p,i) => {
+    if (i % labelStep === 0 || i === points.length-1) {
+      svg += `<text x="${xScale(i)}" y="${h-2}" class="chart-label" text-anchor="middle">${fmtShort(p.date)}</text>`;
+    }
+  });
+  svg += `<polyline points="${pts.join(' ')}" class="chart-line"/>`;
+  points.forEach((p,i) => {
+    svg += `<circle cx="${xScale(i)}" cy="${yScale(p.val)}" r="3.5" class="chart-dot"/>`;
+  });
+  svg += `</svg>`;
+  return svg;
+}
+
+// ─── CALENDAR HEATMAP ───
+function buildCalendar(weeksBack=5) {
+  let html = `<div class="cal-header">${["Mo","Di","Mi","Do","Fr","Sa","So"].map(d=>`<span>${d}</span>`).join("")}</div>`;
+  const t = new Date(todayStr());
+  const dow = t.getDay() || 7;
+  const thisMon = new Date(t);
+  thisMon.setDate(t.getDate() - dow + 1);
+  const startMon = new Date(thisMon);
+  startMon.setDate(thisMon.getDate() - (weeksBack-1) * 7);
+
+  for (let w = 0; w < weeksBack; w++) {
+    html += `<div class="cal-row">`;
+    for (let d = 0; d < 7; d++) {
+      const dt = new Date(startMon);
+      dt.setDate(startMon.getDate() + w * 7 + d);
+      const ds = dt.toISOString().slice(0,10);
+      if (ds > todayStr()) {
+        html += `<div class="cal-day empty"></div>`;
+      } else {
+        const e = getEntry(ds);
+        const active = e.workout || e.cardio;
+        const isToday = ds === todayStr();
+        html += `<div class="cal-day${active?' active':''}${isToday?' today':''}">${dt.getDate()}</div>`;
+      }
+    }
+    html += `</div>`;
+  }
+  html += `<div class="legend"><div class="legend-item"><div class="legend-dot" style="background:var(--green30);border:1px solid var(--green)"></div>Aktiv</div><div class="legend-item"><div class="legend-dot" style="background:var(--bg);border:2px solid var(--green)"></div>Heute</div></div>`;
+  return html;
+}
+
+// ─── CSV EXPORT ───
+function exportCSV() {
+  const sorted = Object.entries(data).sort(([a],[b]) => a.localeCompare(b));
+  const lines = ["Datum;Workout;Cardio;Protein;Bankdruecken_kg;Klimmzuege_reps;Kreuzheben_kg;Bauchumfang_cm"];
+  sorted.forEach(([d,e]) => {
+    lines.push([d, e.workout||"", e.cardio||"", e.protein?"ja":"", e.bankdruecken||"", e.klimmzuege||"", e.kreuzheben||"", e.bauchumfang||""].join(";"));
+  });
+  return lines.join("\n");
+}
+
+// ─── RENDER ───
+function render() {
+  const phase = getPhase(selectedDate);
+  const entry = getEntry(selectedDate);
+  const isToday = selectedDate === todayStr();
+  const app = document.getElementById("app");
+
+  let html = `<h1>Rekomposition</h1><div class="phase">Phase ${phase.id} – ${phase.name}</div>`;
+
+  // Tabs
+  html += `<div class="tabs">`;
+  ["log","stats","export"].forEach(t => {
+    const label = t === "log" ? "Log" : t === "stats" ? "Stats" : "Export";
+    html += `<button class="tab${currentTab===t?' active':''}" onclick="switchTab('${t}')">${label}</button>`;
+  });
+  html += `</div>`;
+
+  // ─── LOG TAB ───
+  if (currentTab === "log") {
+    // Date nav
+    html += `<div class="date-nav">
+      <button class="date-btn" onclick="shiftDate(-1)">‹</button>
+      <div><div class="date-text">${fmtDate(selectedDate)}</div>
+      <div class="date-sub">${weekday(selectedDate)}${isToday?" · Heute":""}</div></div>
+      <button class="date-btn" onclick="shiftDate(1)">›</button></div>`;
+
+    // Workout
+    html += `<div class="card"><div class="card-title">Workout</div><div class="chips">`;
+    phase.workouts.forEach(w => {
+      html += `<button class="chip${entry.workout===w?' on':''}" onclick="toggleWorkout('${w}')">${w}</button>`;
+    });
+    html += `<button class="chip${entry.workout==='Pause'?' on':''}" onclick="toggleWorkout('Pause')">Pause</button>`;
+    html += `</div></div>`;
+
+    // Cardio
+    html += `<div class="card"><div class="card-title">Cardio</div><div class="chips">`;
+    ["Intervall","Spaziergang"].forEach(c => {
+      html += `<button class="chip${entry.cardio===c?' on':''}" onclick="toggleCardio('${c}')">${c}</button>`;
+    });
+    html += `</div></div>`;
+
+    // Protein
+    html += `<div class="card"><div class="toggle-row">
+      <span class="toggle-label">Protein vor dem Abendessen?</span>
+      <button class="toggle ${entry.protein?'on':'off'}" onclick="toggleProtein()"></button>
+    </div></div>`;
+
+    // Marker exercises (show when workout is selected and not Pause)
+    if (entry.workout && entry.workout !== "Pause") {
+      html += `<div class="card"><div class="card-title">Leistungsmarker</div>`;
+      MARKERS.forEach(m => {
+        const val = entry[m.key] || "";
+        html += `<div class="exercise-row">
+          <span class="exercise-name">${m.name}</span>
+          <input class="exercise-input" type="text" inputmode="decimal" value="${val}"
+            placeholder="–" onchange="saveMarker('${m.key}', this.value)">
+          <span class="exercise-unit">${m.unit}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Waist (show on Sundays or if already has data for this day)
+    if (isSunday(selectedDate) || entry.bauchumfang) {
+      html += `<div class="card"><div class="card-title">Bauchumfang${isSunday(selectedDate)?' (Sonntagsmessung)':''}</div>
+        <div class="waist-row">
+          <input class="waist-input" type="text" inputmode="decimal" value="${entry.bauchumfang||''}"
+            placeholder="cm" onchange="saveWaist(this.value)">
+          <span style="color:var(--text2);font-size:14px">cm</span>
+        </div></div>`;
+    }
+  }
+
+  // ─── STATS TAB ───
+  if (currentTab === "stats") {
+    const streak = getStreak();
+    const totalWorkouts = Object.values(data).filter(e => e.workout && e.workout !== "Pause").length;
+    const totalCardio = Object.values(data).filter(e => e.cardio).length;
+    const proteinDays = Object.values(data).filter(e => e.protein).length;
+    const totalDays = Object.keys(data).length;
+
+    // Key stats
+    html += `<div class="card"><div class="stat-row">
+      <div class="stat"><div class="stat-val${streak>=3?' good':''}">${streak}</div><div class="stat-label">Streak</div></div>
+      <div class="stat"><div class="stat-val">${totalWorkouts}</div><div class="stat-label">Workouts</div></div>
+      <div class="stat"><div class="stat-val">${totalCardio}</div><div class="stat-label">Cardio</div></div>
+    </div></div>`;
+
+    // Weekly compliance
+    const weeks = getWeeklyCompliance(4);
+    html += `<div class="card"><div class="card-title">Wochen-Compliance</div>`;
+    weeks.forEach(w => {
+      const target = 3;
+      const pct = Math.min(100, Math.round((w.workouts / target) * 100));
+      html += `<div class="week-summary">
+        <span class="week-label">KW ${w.label}</span>
+        <span class="week-val" style="color:${w.workouts>=3?'var(--green)':w.workouts>=2?'var(--amber)':'var(--red)'}">
+          ${w.workouts}/3 Kraft · ${w.cardio} Cardio · ${w.protein} Protein
+        </span>
+      </div>`;
+    });
+    html += `</div>`;
+
+    // Calendar
+    html += `<div class="card"><div class="card-title">Letzte 5 Wochen</div>${buildCalendar(5)}</div>`;
+
+    // Marker charts
+    MARKERS.forEach(m => {
+      const pts = getMarkerData(m.key);
+      html += `<div class="card"><div class="card-title">${m.name} (${m.unit})</div>${buildChart(pts, m.unit)}</div>`;
+    });
+
+    // Waist chart
+    const waist = getWaistData();
+    if (waist.length > 0) {
+      html += `<div class="card"><div class="card-title">Bauchumfang (cm)</div>${buildChart(waist, "cm")}</div>`;
+    }
+
+    // Protein compliance
+    if (totalDays > 0) {
+      const pPct = Math.round((proteinDays / totalDays) * 100);
+      html += `<div class="card"><div class="card-title">Protein-Compliance</div>
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <span class="stat-val${pPct>=80?' good':pPct>=60?' warn':''}">${pPct}%</span>
+          <span style="font-size:13px;color:var(--text2)">(${proteinDays} von ${totalDays} Tagen)</span>
+        </div>
+        <div class="compliance-bar"><div class="compliance-fill" style="width:${pPct}%"></div></div>
+      </div>`;
+    }
+  }
+
+  // ─── EXPORT TAB ───
+  if (currentTab === "export") {
+    const count = Object.keys(data).length;
+    html += `<div class="card"><div class="card-title">Daten für Claude</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">
+        CSV kopieren und in den Chat einfügen – Claude analysiert deinen Fortschritt.</p>
+      <textarea class="export-area" readonly id="csv-area">${exportCSV()}</textarea>
+      <button class="btn" style="width:100%;margin-top:10px;padding:12px" onclick="copyCSV()">CSV kopieren</button>
+    </div>`;
+
+    // Summary
+    const allW = getWaistData();
+    html += `<div class="card"><div class="card-title">Zusammenfassung</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.8">
+        <div>Einträge: ${count}</div>
+        <div>Workouts: ${Object.values(data).filter(e=>e.workout&&e.workout!=="Pause").length}</div>
+        <div>Cardio: ${Object.values(data).filter(e=>e.cardio).length}</div>
+        ${allW.length?`<div>Bauchumfang Start: ${allW[0].val} cm</div><div>Bauchumfang Aktuell: ${allW[allW.length-1].val} cm (${(allW[allW.length-1].val-allW[0].val).toFixed(1)} cm)</div>`:''}
+      </div></div>`;
+
+    // Data management
+    html += `<div class="card"><div class="card-title">Datenmanagement</div>
+      <button class="btn" style="width:100%;padding:12px;background:var(--border);color:var(--text)" onclick="downloadJSON()">
+        JSON-Backup herunterladen
+      </button>
+      <div style="margin-top:10px">
+        <label class="btn" style="display:block;width:100%;padding:12px;background:var(--border);color:var(--text);text-align:center;cursor:pointer">
+          JSON-Backup laden
+          <input type="file" accept=".json" style="display:none" onchange="uploadJSON(event)">
+        </label>
+      </div>
+      <button class="btn" style="width:100%;margin-top:10px;padding:12px;background:var(--border);color:var(--red)"
+        onclick="resetData()" id="reset-btn">Alle Daten zurücksetzen</button>
+    </div>`;
+  }
+
+  app.innerHTML = html;
+}
+
+// ─── EVENT HANDLERS ───
+window.switchTab = function(t) { currentTab = t; render(); };
+
+window.toggleWorkout = function(type) {
+  const e = getEntry(selectedDate);
+  setField(selectedDate, "workout", e.workout === type ? null : type);
+};
+
+window.toggleCardio = function(type) {
+  const e = getEntry(selectedDate);
+  setField(selectedDate, "cardio", e.cardio === type ? null : type);
+};
+
+window.toggleProtein = function() {
+  const e = getEntry(selectedDate);
+  setField(selectedDate, "protein", e.protein ? null : true);
+};
+
+window.saveMarker = function(key, val) {
+  const num = parseFloat(val.replace(",","."));
+  setField(selectedDate, key, isNaN(num) ? null : num);
+};
+
+window.saveWaist = function(val) {
+  const num = parseFloat(val.replace(",","."));
+  setField(selectedDate, "bauchumfang", isNaN(num) ? null : num);
+};
+
+window.copyCSV = async function() {
+  try {
+    await navigator.clipboard.writeText(exportCSV());
+    toast("CSV kopiert");
+  } catch {
+    // Fallback: select textarea
+    const area = document.getElementById("csv-area");
+    area.select();
+    document.execCommand("copy");
+    toast("CSV kopiert");
+  }
+};
+
+window.downloadJSON = function() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `rekomposition-backup-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("Backup heruntergeladen");
+};
+
+window.uploadJSON = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (typeof imported !== "object" || Array.isArray(imported)) {
+        toast("Ungültiges Format");
+        return;
+      }
+      data = imported;
+      save();
+      render();
+      toast(`${Object.keys(imported).length} Einträge geladen`);
+    } catch {
+      toast("Datei konnte nicht gelesen werden");
+    }
+  };
+  reader.readAsText(file);
+};
+
+let resetConfirm = false;
+window.resetData = function() {
+  const btn = document.getElementById("reset-btn");
+  if (!resetConfirm) {
+    resetConfirm = true;
+    btn.textContent = "Wirklich alles löschen?";
+    btn.style.background = "var(--red)";
+    btn.style.color = "#fff";
+    setTimeout(() => {
+      resetConfirm = false;
+      render();
+    }, 3000);
+    return;
+  }
+  data = {};
+  save();
+  resetConfirm = false;
+  render();
+  toast("Alle Daten gelöscht");
+};
+
+// ─── INIT ───
+load();
+render();
+</script>
+</body>
+</html>
